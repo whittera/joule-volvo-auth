@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Joule — Volvo authorisation</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #111; color: #f5f5f5; }
+    main { width: min(560px, calc(100% - 40px)); padding: 32px; border: 1px solid #444; border-radius: 16px; background: #1b1b1b; }
+    h1 { margin-top: 0; }
+    code { overflow-wrap: anywhere; }
+    .ok { color: #8ee59b; }
+    .error { color: #ff9b9b; }
+    .muted { color: #aaa; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Joule</h1>
+  <p id="status">Completing Volvo authorisation…</p>
+  <p class="muted">This page does not contain or store Volvo credentials.</p>
+</main>
+<script>
+(() => {
+  const status = document.getElementById('status');
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const state = params.get('state');
+  const error = params.get('error');
+  const errorDescription = params.get('error_description');
+
+  // This public page is deliberately only a landing point. It never exchanges
+  // the authorisation code and contains no client secret, API key or PKCE
+  // verifier. Joule's private OAuth helper will own that sensitive step.
+  if (error) {
+    status.className = 'error';
+    status.textContent = `Volvo authorisation failed: ${errorDescription || error}`;
+    return;
+  }
+
+  if (!code) {
+    status.textContent = 'Joule Volvo OAuth callback is ready.';
+    return;
+  }
+
+  status.className = 'ok';
+  status.textContent = state
+    ? 'Volvo authorisation returned successfully. You can return to Joule.'
+    : 'Volvo returned an authorisation code, but no state value was present. Return to Joule without continuing.';
+
+  // Remove the one-time code from the visible address/history as soon as the
+  // page has inspected it. Nothing is persisted or transmitted by this page.
+  history.replaceState({}, document.title, window.location.pathname);
+})();
+</script>
+</body>
+</html>
